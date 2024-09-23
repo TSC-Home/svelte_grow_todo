@@ -3,7 +3,7 @@
 	export let growth: number;
 
 	const plants: any = {
-		tree: ['', '🌱', '🌿', '🌳'],
+		tree: ['🌱', '🌿', '🌳'],
 		flower: ['🌱', '🌼', '🌻'],
 		cactus: ['🌱', '🌵', '🏜️']
 	};

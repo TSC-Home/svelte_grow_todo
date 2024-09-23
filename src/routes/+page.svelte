@@ -66,9 +66,7 @@
 	}
 
 	function updateTodoTime(id: number, time: number) {
-		todos = todos.map((todo) =>
-			todo.id === id ? { ...todo, timeSpent: todo.timeSpent + time } : todo
-		);
+		todos = todos.map((todo) => (todo.id === id ? { ...todo, timeSpent: time } : todo));
 		saveTodos();
 	}
 

@@ -1,24 +1,40 @@
 <script lang="ts">
-	import { onDestroy } from 'svelte';
+	import { onMount, onDestroy } from 'svelte';
+	import { browser } from '$app/environment';
 
 	export let todos: {
 		id: number;
 		text: string;
 		completed: boolean;
 		date: string;
-		timeSpent: number; // Zeit, die bisher für dieses Todo verbracht wurde
+		timeSpent: number;
 	}[];
 	export let addTodo: (text: string) => void;
 	export let toggleTodo: (id: number) => void;
 	export let deleteTodo: (id: number) => void;
-	export let updateTodoTime: (id: number, time: number) => void; // Funktion zum Aktualisieren der Zeit im Todo
+	export let updateTodoTime: (id: number, time: number) => void;
 	export let selectedDate: string;
 
 	let newTodoText = '';
 	let timers: { [key: number]: { interval: any; startTime: number; localElapsedTime: number } } =
 		{};
+	let filterType: 'all' | 'tree' | 'week' | 'month' = 'tree';
 
-	// Hinzufügen eines neuen Todos
+	onMount(() => {
+		if (browser) {
+			const storedFilterType = localStorage.getItem('todoFilterType');
+			if (storedFilterType) {
+				filterType = storedFilterType as typeof filterType;
+			}
+		}
+	});
+
+	$: {
+		if (browser) {
+			localStorage.setItem('todoFilterType', filterType);
+		}
+	}
+
 	function handleSubmit() {
 		if (newTodoText.trim()) {
 			addTodo(newTodoText.trim());
@@ -26,21 +42,16 @@
 		}
 	}
 
-	// Timer-Start- und Stoppfunktion
 	function startTimer(id: number) {
-		// Wenn der Timer bereits läuft, stoppen wir ihn
 		if (timers[id]) {
 			stopTimer(id);
 		} else {
 			let todo = todos.find((todo) => todo.id === id);
-
 			if (todo) {
-				// Starte den Timer, merke die aktuelle Zeit
 				timers[id] = {
-					startTime: Date.now(), // Starte den Timer ab dem aktuellen Zeitpunkt
-					localElapsedTime: todo.timeSpent, // Beginne mit der bereits gespeicherten Zeit
+					startTime: Date.now(),
+					localElapsedTime: todo.timeSpent,
 					interval: setInterval(() => {
-						// Erhöhe die verstrichene Zeit basierend auf der Startzeit
 						const currentTime = Date.now();
 						timers[id].localElapsedTime =
 							todo.timeSpent + Math.floor((currentTime - timers[id].startTime) / 1000);
@@ -50,49 +61,101 @@
 		}
 	}
 
-	// Timer-Stoppen-Funktion und Zeit speichern
 	function stopTimer(id: number) {
 		if (timers[id]) {
-			// Berechne die verstrichene Zeit, seit der Timer gestartet wurde
 			const totalTime = timers[id].localElapsedTime;
-
-			// Timer stoppen
 			clearInterval(timers[id].interval);
-
-			// Zeit endgültig speichern (im Backend oder der Hauptliste)
 			updateTodoTime(id, totalTime);
-
-			// Timer löschen
 			delete timers[id];
 		}
 	}
 
-	// Stoppe alle Timer, wenn die Komponente zerstört wird
 	onDestroy(() => {
 		Object.keys(timers).forEach((id) => clearInterval(timers[Number(id)].interval));
 	});
 
-	// Zeitformatierung (hh:mm:ss)
 	function formatTime(seconds: number): string {
 		const hours = Math.floor(seconds / 3600);
 		const minutes = Math.floor((seconds % 3600) / 60);
 		const remainingSeconds = seconds % 60;
-		return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${remainingSeconds
-			.toString()
-			.padStart(2, '0')}`;
+		return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
 	}
 
-	// Reaktive Variable für die gefilterten Todos
-	$: filteredTodos = todos.filter((todo) => todo.date === selectedDate);
+	function getDateColor(todoDate: string): string {
+		const today = new Date();
+		const dueDate = new Date(todoDate);
+		const timeDiff = dueDate.getTime() - today.getTime();
+		const dayDiff = timeDiff / (1000 * 3600 * 24);
+
+		if (dayDiff < 0) return 'bg-red-200'; // Overdue
+		if (dayDiff < 3) return 'bg-yellow-200'; // Due in next 3 days
+		if (dayDiff < 7) return 'bg-green-200'; // Due in next week
+		return 'bg-blue-200'; // Due later
+	}
+
+	function isToday(date: string): boolean {
+		const today = new Date();
+		const todoDate = new Date(date);
+		return todoDate.toDateString() === today.toDateString();
+	}
+
+	function isInCurrentWeek(date: string): boolean {
+		const today = new Date();
+		const todoDate = new Date(date);
+		const weekStart = new Date(today.setDate(today.getDate() - today.getDay()));
+		const weekEnd = new Date(today.setDate(today.getDate() - today.getDay() + 6));
+		return todoDate >= weekStart && todoDate <= weekEnd;
+	}
+
+	function isInCurrentMonth(date: string): boolean {
+		const today = new Date();
+		const todoDate = new Date(date);
+		return (
+			todoDate.getMonth() === today.getMonth() && todoDate.getFullYear() === today.getFullYear()
+		);
+	}
+
+	$: filteredTodos = todos
+		.filter((todo) => {
+			if (filterType === 'tree') return todo.date === selectedDate;
+			if (filterType === 'week') return isInCurrentWeek(todo.date);
+			if (filterType === 'month') return isInCurrentMonth(todo.date);
+			return true; // 'all' filter
+		})
+		.sort((a, b) => {
+			if (isToday(a.date) && !isToday(b.date)) return -1;
+			if (!isToday(a.date) && isToday(b.date)) return 1;
+			return new Date(a.date).getTime() - new Date(b.date).getTime();
+		});
+
+	$: groupedTodos = filteredTodos.reduce(
+		(acc, todo) => {
+			if (!acc[todo.date]) {
+				acc[todo.date] = [];
+			}
+			acc[todo.date].push(todo);
+			return acc;
+		},
+		{} as { [key: string]: typeof todos }
+	);
 </script>
 
-<!-- Benutzeroberfläche -->
 <div class="rounded-lg bg-white p-6 shadow-md">
-	<h2 class="mb-4 text-2xl font-semibold text-green-700">Tasks for {selectedDate}</h2>
+	<div class="flex items-center justify-between">
+		<h2 class="mb-4 text-2xl font-semibold text-green-700">Tasks</h2>
+		<div class="mb-4">
+			<select bind:value={filterType} class="rounded border p-1">
+				<option value="all">All Tasks</option>
+				<option value="tree">Tree View (Selected Date)</option>
+				<option value="week">This Week</option>
+				<option value="month">This Month</option>
+			</select>
+		</div>
+	</div>
 	<form on:submit|preventDefault={handleSubmit} class="mb-4">
 		<input
 			bind:value={newTodoText}
-			placeholder="Add new task"
+			placeholder="Add new task for {selectedDate}"
 			class="w-full rounded-md border border-green-300 p-2 focus:outline-none focus:ring-2 focus:ring-green-500"
 		/>
 		<button
@@ -102,41 +165,47 @@
 			Add
 		</button>
 	</form>
-	<ul class="space-y-2">
-		{#each filteredTodos as todo (todo.id)}
-			<li class="flex items-center justify-between rounded-md bg-green-50 p-3">
-				<div class="flex items-center space-x-2">
-					<input
-						type="checkbox"
-						checked={todo.completed}
-						on:change={() => toggleTodo(todo.id)}
-						class="form-checkbox h-5 w-5 text-green-600"
-					/>
-					<span class={todo.completed ? 'text-green-500 line-through' : 'text-green-800'}>
-						{todo.text}
-					</span>
-				</div>
-				<div class="flex items-center space-x-2">
-					<!-- Zeigt die live verstrichene Zeit an, wenn der Timer läuft -->
-					<span class="text-sm text-green-600">
-						{#if timers[todo.id]}
-							{formatTime(timers[todo.id].localElapsedTime)}
-						{:else}
-							{formatTime(todo.timeSpent)}
-							<!-- Zeigt die gespeicherte Zeit, wenn der Timer nicht läuft -->
-						{/if}
-					</span>
-					<button
-						on:click={() => startTimer(todo.id)}
-						class="rounded bg-blue-500 px-2 py-1 text-xs text-white hover:bg-blue-600"
+
+	{#each Object.entries(groupedTodos) as [date, todosForDate]}
+		<div class="mb-4">
+			<h3 class="mb-2 text-lg font-semibold text-gray-700">{date}</h3>
+			<ul class="space-y-2">
+				{#each todosForDate as todo (todo.id)}
+					<li
+						class={`flex items-center justify-between rounded-md p-3 ${isToday(todo.date) || selectedDate === todo.date ? 'bg-green-50' : getDateColor(todo.date)}`}
 					>
-						{timers[todo.id] ? 'Stop' : 'Start'}
-					</button>
-					<button on:click={() => deleteTodo(todo.id)} class="text-red-500 hover:text-red-700">
-						Delete
-					</button>
-				</div>
-			</li>
-		{/each}
-	</ul>
+						<div class="flex items-center space-x-2">
+							<input
+								type="checkbox"
+								checked={todo.completed}
+								on:change={() => toggleTodo(todo.id)}
+								class="form-checkbox h-5 w-5 text-green-600"
+							/>
+							<span class={todo.completed ? 'text-green-500 line-through' : 'text-green-800'}>
+								{todo.text}
+							</span>
+						</div>
+						<div class="flex items-center space-x-2">
+							<span class="text-sm text-green-600">
+								{#if timers[todo.id]}
+									{formatTime(timers[todo.id].localElapsedTime)}
+								{:else}
+									{formatTime(todo.timeSpent)}
+								{/if}
+							</span>
+							<button
+								on:click={() => startTimer(todo.id)}
+								class="rounded bg-blue-500 px-2 py-1 text-xs text-white hover:bg-blue-600"
+							>
+								{timers[todo.id] ? 'Stop' : 'Start'}
+							</button>
+							<button on:click={() => deleteTodo(todo.id)} class="text-red-500 hover:text-red-700">
+								Delete
+							</button>
+						</div>
+					</li>
+				{/each}
+			</ul>
+		</div>
+	{/each}
 </div>

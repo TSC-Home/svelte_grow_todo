@@ -8,11 +8,13 @@
 		completed: boolean;
 		date: string;
 		timeSpent: number;
+		locked: boolean;
 	}[];
 	export let addTodo: (text: string) => void;
 	export let toggleTodo: (id: number) => void;
 	export let deleteTodo: (id: number) => void;
 	export let updateTodoTime: (id: number, time: number) => void;
+	export let lockTodo: (id: number) => void;
 	export let selectedDate: string;
 
 	let newTodoText = '';
@@ -199,8 +201,16 @@
 							>
 								{timers[todo.id] ? 'Stop' : 'Start'}
 							</button>
-							<button on:click={() => deleteTodo(todo.id)} class="text-red-500 hover:text-red-700">
-								Delete
+							<button
+								on:click={() => lockTodo(todo.id)}
+								class="icon text-gray-500 hover:text-gray-700"
+								>{todo.locked ? 'lock' : 'lock_open'}</button
+							>
+							<button
+								on:click={() => deleteTodo(todo.id)}
+								class="icon text-red-500 hover:text-red-700"
+							>
+								delete
 							</button>
 						</div>
 					</li>

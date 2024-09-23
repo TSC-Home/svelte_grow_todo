@@ -12,6 +12,7 @@
 		completed: boolean;
 		date: string;
 		timeSpent: number;
+		locked: boolean;
 	}
 
 	let todos: Todo[] = [];
@@ -20,6 +21,7 @@
 	let plantGrowth = 0;
 
 	onMount(() => {
+		console.log(selectedDate);
 		if (browser) {
 			const storedTodos = localStorage.getItem('todos');
 			if (storedTodos) {
@@ -46,7 +48,8 @@
 			text,
 			completed: false,
 			date: selectedDate,
-			timeSpent: 0
+			timeSpent: 0,
+			locked: false
 		};
 		todos = [...todos, newTodo];
 		saveTodos();
@@ -63,6 +66,11 @@
 		todos = todos.filter((todo) => todo.id !== id);
 		saveTodos();
 		updatePlantGrowth();
+	}
+
+	function lockTodo(id: number) {
+		todos = todos.map((todo) => (todo.id === id ? { ...todo, locked: !todo.locked } : todo));
+		saveTodos();
 	}
 
 	function updateTodoTime(id: number, time: number) {
@@ -91,7 +99,7 @@
 	function moveUncompletedTodos() {
 		const today = new Date().toISOString().split('T')[0];
 		todos = todos.map((todo) => {
-			if (!todo.completed && todo.date < today) {
+			if (!todo.completed && !todo.locked && todo.date < today) {
 				return { ...todo, date: today };
 			}
 			return todo;
@@ -110,7 +118,15 @@
 	<div class="flex w-full max-w-6xl flex-col gap-8 md:flex-row">
 		<div class="flex-1">
 			<Calendar {todos} {selectedDate} {changeDate} {isDateCompleted} />
-			<TodoList {todos} {addTodo} {toggleTodo} {deleteTodo} {selectedDate} {updateTodoTime} />
+			<TodoList
+				{todos}
+				{addTodo}
+				{toggleTodo}
+				{deleteTodo}
+				{selectedDate}
+				{updateTodoTime}
+				{lockTodo}
+			/>
 		</div>
 		<div class="flex flex-1 flex-col items-center justify-center">
 			<PlantSelector {selectedPlant} {changePlant} />

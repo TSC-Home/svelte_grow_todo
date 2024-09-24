@@ -105,7 +105,8 @@
 		const today = new Date();
 		const todoDate = new Date(date);
 		const weekStart = new Date(today.setDate(today.getDate() - today.getDay()));
-		const weekEnd = new Date(today.setDate(today.getDate() - today.getDay() + 6));
+		const weekEnd = new Date(weekStart);
+		weekEnd.setDate(weekEnd.getDate() + 6);
 		return todoDate >= weekStart && todoDate <= weekEnd;
 	}
 
@@ -121,13 +122,25 @@
 		.filter((todo) => {
 			const todoDate = new Date(todo.date);
 			const selected = new Date(selectedDate);
-			// Zeigt Todos an, die entweder am ausgewählten Datum sind oder vorher liegen und unerledigt sind
-			return todoDate.getTime() === selected.getTime() || (!todo.completed && todoDate < selected);
+
+			switch (filterType) {
+				case 'all':
+					return true;
+				case 'tree':
+					// Show todos for the selected date or earlier if not completed
+					return (
+						todoDate <= selected &&
+						(!todo.completed || todoDate.toDateString() === selected.toDateString())
+					);
+				case 'week':
+					return isInCurrentWeek(todo.date);
+				case 'month':
+					return isInCurrentMonth(todo.date);
+				default:
+					return true;
+			}
 		})
-		// Sortiere nach Datum, älteste Aufgaben zuerst
-		.sort((a, b) => {
-			return new Date(a.date).getTime() - new Date(b.date).getTime();
-		});
+		.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
 	$: groupedTodos = filteredTodos.reduce(
 		(acc, todo) => {
@@ -203,13 +216,14 @@
 							<button
 								on:click={() => lockTodo(todo.id)}
 								class="icon text-gray-500 hover:text-gray-700"
-								>{todo.locked ? 'lock' : 'lock_open'}</button
 							>
+								{todo.locked ? '🔒' : '🔓'}
+							</button>
 							<button
 								on:click={() => deleteTodo(todo.id)}
 								class="icon text-red-500 hover:text-red-700"
 							>
-								delete
+								🗑️
 							</button>
 						</div>
 					</li>

@@ -218,7 +218,7 @@
 		? 'blur-sm'
 		: ''}"
 >
-	<div class="absolute left-4 top-4 text-4xl">🌱</div>
+	<div class="absolute left-4 top-4 text-4xl cursor-default">🌱</div>
 	<div class="absolute right-4 top-4">
 		{#if isAuthenticated}
 			<button

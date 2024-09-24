@@ -119,14 +119,13 @@
 
 	$: filteredTodos = todos
 		.filter((todo) => {
-			if (filterType === 'tree') return todo.date === selectedDate;
-			if (filterType === 'week') return isInCurrentWeek(todo.date);
-			if (filterType === 'month') return isInCurrentMonth(todo.date);
-			return true; // 'all' filter
+			const todoDate = new Date(todo.date);
+			const selected = new Date(selectedDate);
+			// Zeigt Todos an, die entweder am ausgewählten Datum sind oder vorher liegen und unerledigt sind
+			return todoDate.getTime() === selected.getTime() || (!todo.completed && todoDate < selected);
 		})
+		// Sortiere nach Datum, älteste Aufgaben zuerst
 		.sort((a, b) => {
-			if (isToday(a.date) && !isToday(b.date)) return -1;
-			if (!isToday(a.date) && isToday(b.date)) return 1;
 			return new Date(a.date).getTime() - new Date(b.date).getTime();
 		});
 

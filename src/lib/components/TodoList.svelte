@@ -128,9 +128,16 @@
 					return true;
 				case 'tree':
 					// Show todos for the selected date or earlier if not completed
+					// return (
+					// 	todoDate <= selected &&
+					// 	(!todo.completed || todoDate.toDateString() === selected.toDateString())
+					// );
+					const today = new Date();
+					today.setHours(0, 0, 0, 0); // Reset today's time to 00:00:00 for accurate comparison
+
 					return (
-						todoDate <= selected &&
-						(!todo.completed || todoDate.toDateString() === selected.toDateString())
+						todoDate.toDateString() === selected.toDateString() || // Todos from the selected date
+						(todoDate < today && !todo.completed) // Uncompleted todos from before today
 					);
 				case 'week':
 					return isInCurrentWeek(todo.date);

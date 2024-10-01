@@ -6,6 +6,7 @@
 	import Plant from '$lib/components/Plant.svelte';
 	import Calendar from '$lib/components/Calendar.svelte';
 	import PlantSelector from '$lib/components/PlantSelector.svelte';
+	import TeamPopup from '$lib/components/TeamPopUp.svelte';
 
 	const pb = new PocketBase('https://plantodo.krio.synthetix.me/');
 
@@ -218,9 +219,10 @@
 		? 'blur-sm'
 		: ''}"
 >
-	<div class="absolute left-4 top-4 text-4xl cursor-default">🌱</div>
+	<div class="absolute left-4 top-4 cursor-default text-4xl">🌱</div>
 	<div class="absolute right-4 top-4">
 		{#if isAuthenticated}
+			<TeamPopup />
 			<button
 				on:click={handleLogout}
 				class="mr-2 rounded bg-red-500 px-4 py-2 font-bold text-white hover:bg-red-600"

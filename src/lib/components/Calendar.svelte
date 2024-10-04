@@ -61,6 +61,12 @@
 		return todos.filter((todo) => todo.date === date);
 	}
 
+	function isToday(date: string): boolean {
+		const today = new Date();
+		const todoDate = new Date(date);
+		return todoDate.toDateString() === today.toDateString();
+	}
+
 	function formatDate(year: number, month: number, day: number): string {
 		return `${year}-${(month + 1).toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
 	}
@@ -86,7 +92,7 @@
 			{#each weeks as week}
 				<tr>
 					{#each week as day}
-						<td class="p-2 text-center">
+						<td class="w-fit p-2 text-center">
 							{#if day !== null}
 								{@const dateString = formatDate(year, month, day)}
 								<button
@@ -101,8 +107,10 @@
 								>
 									{day}
 								</button>
-								{#if getTasksForDate(dateString).length > 0}
-									<span class="mx-auto mt-1 block h-2 w-2 rounded-full bg-green-400"></span>
+								{#if isToday(dateString)}
+									<div class="absolute z-10 w-fit bg-red-400">
+										<span class="mx-auto mt-1 block h-2 w-2 rounded-full bg-green-400"></span>
+									</div>
 								{/if}
 							{/if}
 						</td>

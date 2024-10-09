@@ -1,14 +1,10 @@
 <script lang="ts">
-	import { onMount } from 'svelte';
-	import { browser } from '$app/environment';
-	import PocketBase from 'pocketbase';
+	import { enhance } from '$app/forms';
 	import TodoList from '$lib/components/TodoList.svelte';
 	import Plant from '$lib/components/Plant.svelte';
 	import Calendar from '$lib/components/Calendar.svelte';
 	import PlantSelector from '$lib/components/PlantSelector.svelte';
 	import TeamPopup from '$lib/components/TeamPopUp.svelte';
-
-	const pb = new PocketBase('https://plantodo.krio.synthetix.me/');
 
 	interface Todo {
 		id: number;
@@ -18,8 +14,8 @@
 		timeSpent: number;
 		locked: boolean;
 	}
-
-	let todos: Todo[] = [];
+	export let data;
+	let todos: Todo[] = (data.todos || []).map((todo: any) => ({ ...todo, id: Number(todo.id) }));
 	let selectedDate = new Date().toISOString().split('T')[0];
 	let selectedPlant = 'tree';
 	let plantGrowth = 0;
@@ -29,70 +25,26 @@
 	let password = '';
 	let isAuthenticated = false;
 
-	onMount(async () => {
-		isAuthenticated = pb.authStore.isValid;
-		if (isAuthenticated) {
-			await fetchUserData();
-		} else {
-			loadFromLocalStorage();
-		}
-	});
-
-	function loadFromLocalStorage() {
-		if (browser) {
-			const storedTodos = localStorage.getItem('todos');
-			const storedPlant = localStorage.getItem('selectedPlant');
-			if (storedTodos) {
-				todos = JSON.parse(storedTodos);
-			}
-			if (storedPlant) {
-				selectedPlant = storedPlant;
-			}
-			updatePlantGrowth();
-			moveUncompletedTodos();
-		}
-	}
-
-	function saveToLocalStorage() {
-		if (browser) {
-			localStorage.setItem('todos', JSON.stringify(todos));
-			localStorage.setItem('selectedPlant', selectedPlant);
-		}
-	}
-
-	async function fetchUserData() {
-		try {
-			const record = await pb
-				.collection('data_store')
-				.getFirstListItem(`user="${pb.authStore.model?.id}"`);
-			const userData = record.store;
-			todos = userData.todos || [];
-			selectedPlant = userData.selectedPlant || 'tree';
-			updatePlantGrowth();
-			moveUncompletedTodos();
-		} catch (error) {
-			console.error('Error fetching user data:', error);
-		}
-	}
-
 	async function saveUserData() {
-		if (isAuthenticated) {
-			try {
-				const userData = {
-					todos,
-					selectedPlant
-				};
-				const record = await pb
-					.collection('data_store')
-					.getFirstListItem(`user="${pb.authStore.model?.id}"`);
-				await pb.collection('data_store').update(record.id, {
-					store: userData
-				});
-			} catch (error) {
-				console.error('Error saving user data:', error);
-			}
+		const senddata = {
+			todos: todos,
+			selectedPlant: selectedPlant,
+			plantGrowth: plantGrowth
+		};
+
+		const response = await fetch('/api/saveUserData', {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json'
+			},
+			body: JSON.stringify(senddata) // Send the data
+		});
+
+		if (!response.ok) {
+			console.error('Error saving user data:', response);
 		} else {
-			saveToLocalStorage();
+			const result = await response.json();
+			console.log('Response from server:', result);
 		}
 	}
 
@@ -168,49 +120,11 @@
 		showAuthPopup = !showAuthPopup;
 	}
 
-	async function handleAuth() {
-		try {
-			if (isLogin) {
-				await pb.collection('users').authWithPassword(email, password);
-			} else {
-				const user = await pb.collection('users').create({
-					email,
-					password,
-					passwordConfirm: password
-				});
-				await pb.collection('users').authWithPassword(email, password);
-
-				// Create initial data_store entry for the new user
-				await pb.collection('data_store').create({
-					user: user.id,
-					store: {
-						todos,
-						selectedPlant
-					}
-				});
-			}
-			isAuthenticated = true;
-			await fetchUserData();
-			showAuthPopup = false;
-			email = '';
-			password = '';
-		} catch (error) {
-			console.error('Authentication error:', error);
-			alert('Authentication failed. Please try again.');
-		}
-	}
-
 	function handleOutsideClick(event: MouseEvent) {
 		const target = event.target as HTMLElement;
 		if (target.classList.contains('popup-overlay')) {
 			showAuthPopup = false;
 		}
-	}
-
-	async function handleLogout() {
-		pb.authStore.clear();
-		isAuthenticated = false;
-		loadFromLocalStorage();
 	}
 </script>
 
@@ -221,14 +135,16 @@
 >
 	<div class="absolute left-4 top-4 cursor-default text-4xl">🌱</div>
 	<div class="absolute right-4 top-4">
-		{#if isAuthenticated}
+		{#if data?.user}
 			<TeamPopup />
-			<button
-				on:click={handleLogout}
-				class="mr-2 rounded bg-red-500 px-4 py-2 font-bold text-white hover:bg-red-600"
-			>
-				Logout
-			</button>
+			<form method="POST" action="?/logout" use:enhance class="space-x-2">
+				<button
+					type="submit"
+					class="mr-2 rounded bg-red-500 px-4 py-2 font-bold text-white hover:bg-red-600"
+				>
+					Logout
+				</button>
+			</form>
 		{:else}
 			<button
 				on:click={toggleAuthPopup}
@@ -267,34 +183,66 @@
 	>
 		<button class="relative rounded-lg bg-white p-8 shadow-lg" on:click|stopPropagation>
 			<h2 class="mb-4 text-2xl font-bold">{isLogin ? 'Login' : 'Register'}</h2>
-			<form on:submit|preventDefault={handleAuth} class="space-y-4">
-				<div>
-					<label for="email" class="mb-1 block">Email:</label>
-					<input
-						type="email"
-						id="email"
-						bind:value={email}
-						required
-						class="w-full rounded border px-3 py-2"
-					/>
-				</div>
-				<div>
-					<label for="password" class="mb-1 block">Password:</label>
-					<input
-						type="password"
-						id="password"
-						bind:value={password}
-						required
-						class="w-full rounded border px-3 py-2"
-					/>
-				</div>
-				<button
-					type="submit"
-					class="w-full rounded bg-green-500 px-4 py-2 font-bold text-white hover:bg-green-600"
-				>
-					{isLogin ? 'Login' : 'Register'}
-				</button>
-			</form>
+			{#if isLogin}
+				<form class="space-y-4" method="POST" action="?/signIn">
+					<div>
+						<label for="email" class="mb-1 block">Email:</label>
+						<input
+							type="email"
+							id="email"
+							bind:value={email}
+							required
+							class="w-full rounded border px-3 py-2"
+						/>
+					</div>
+					<div>
+						<label for="password" class="mb-1 block">Password:</label>
+						<input
+							type="password"
+							id="password"
+							bind:value={password}
+							required
+							class="w-full rounded border px-3 py-2"
+						/>
+					</div>
+					<button
+						type="submit"
+						class="w-full rounded bg-green-500 px-4 py-2 font-bold text-white hover:bg-green-600"
+					>
+						{isLogin ? 'Login' : 'Register'}
+					</button>
+				</form>
+			{:else}
+				<form class="space-y-4" method="POST" action="?/signUp">
+					test
+					<div>
+						<label for="email" class="mb-1 block">Email:</label>
+						<input
+							type="email"
+							id="email"
+							bind:value={email}
+							required
+							class="w-full rounded border px-3 py-2"
+						/>
+					</div>
+					<div>
+						<label for="password" class="mb-1 block">Password:</label>
+						<input
+							type="password"
+							id="password"
+							bind:value={password}
+							required
+							class="w-full rounded border px-3 py-2"
+						/>
+					</div>
+					<button
+						type="submit"
+						class="w-full rounded bg-green-500 px-4 py-2 font-bold text-white hover:bg-green-600"
+					>
+						{isLogin ? 'Login' : 'Register'}
+					</button>
+				</form>
+			{/if}
 			<button
 				on:click={() => (isLogin = !isLogin)}
 				class="mt-4 text-green-600 hover:text-green-700"

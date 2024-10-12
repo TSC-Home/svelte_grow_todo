@@ -57,7 +57,6 @@ export const actions: Actions = {
 		if (!email || !password) {
 			return fail(400, { message: 'Email and password are required' });
 		}
-
 		try {
 			await locals.pb.collection('users').authWithPassword(email as string, password as string);
 			return { success: true };

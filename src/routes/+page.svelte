@@ -214,7 +214,6 @@
 				</form>
 			{:else}
 				<form class="space-y-4" method="POST" action="?/signUp">
-					test
 					<div>
 						<label for="email" class="mb-1 block">Email:</label>
 						<input

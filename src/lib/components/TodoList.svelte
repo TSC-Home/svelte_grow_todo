@@ -195,7 +195,7 @@
 					<li
 						class={`flex items-center justify-between rounded-md p-3 ${isToday(todo.date) || selectedDate === todo.date ? 'bg-green-50' : getDateColor(todo.date)}`}
 					>
-						<div class="flex items-center space-x-2">
+						<div class="flex items-center gap-x-2">
 							<input
 								type="checkbox"
 								checked={todo.completed}
@@ -206,7 +206,7 @@
 								{todo.text}
 							</span>
 						</div>
-						<div class="flex items-center space-x-2">
+						<div class="flex w-fit items-center gap-x-2">
 							<span class="text-sm text-green-600">
 								{#if timers[todo.id]}
 									{formatTime(timers[todo.id].localElapsedTime)}
@@ -216,21 +216,23 @@
 							</span>
 							<button
 								on:click={() => startTimer(todo.id)}
-								class="rounded bg-blue-500 px-2 py-1 text-xs text-white hover:bg-blue-600"
+								class="mr-2 rounded bg-blue-500 px-2 py-1 text-xs text-white hover:bg-blue-600"
 							>
 								{timers[todo.id] ? 'Stop' : 'Start'}
 							</button>
 							<button
 								on:click={() => lockTodo(todo.id)}
-								class="icon text-gray-500 hover:text-gray-700"
+								class="icon {todo.locked ? 'text-orange-600/60' : 'text-green-600/60'}"
+								title="Keep task"
 							>
-								{todo.locked ? '🔒' : '🔓'}
+								{todo.locked ? 'lock' : 'lock_open_right'}
 							</button>
 							<button
 								on:click={() => deleteTodo(todo.id)}
-								class="icon text-red-500 hover:text-red-700"
+								class="icon text-red-600/80"
+								title="Delete"
 							>
-								🗑️
+								delete
 							</button>
 						</div>
 					</li>

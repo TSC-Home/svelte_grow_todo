@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { createEventDispatcher } from 'svelte';
+	import { onMount } from 'svelte';
 
 	export let todos: { id: number; text: string; completed: boolean; date: string }[];
 	export let selectedDate: string;
@@ -70,6 +71,10 @@
 	function formatDate(year: number, month: number, day: number): string {
 		return `${year}-${(month + 1).toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
 	}
+
+	// onMount(() => {
+	// 	console.log();
+	// });
 </script>
 
 <div class="mb-6 rounded-lg bg-white p-6 shadow-md">
@@ -106,12 +111,16 @@
 									}`}
 								>
 									{day}
+									{#if isToday(dateString)}
+										<div class="absolute z-10 w-8">
+											<span
+												class={`mx-auto mt-1 block h-2 w-2 rounded-full ${
+													selectedDate === dateString ? '' : 'bg-green-400'
+												}`}
+											></span>
+										</div>
+									{/if}
 								</button>
-								{#if isToday(dateString)}
-									<div class="absolute z-10 w-fit bg-red-400">
-										<span class="mx-auto mt-1 block h-2 w-2 rounded-full bg-green-400"></span>
-									</div>
-								{/if}
 							{/if}
 						</td>
 					{/each}

@@ -128,12 +128,12 @@
 </script>
 
 {#if showTeamPopUp}
-	<div
+	<button
 		class="popup-overlay fixed inset-0 flex items-center justify-center bg-black bg-opacity-50"
 		on:click={handleOutsideClick}
 		transition:fade
 	>
-		<div
+		<button
 			class="relative w-full max-w-4xl rounded-lg bg-white p-8 shadow-lg"
 			on:click|stopPropagation
 			transition:fly={{ y: 50, duration: 300 }}
@@ -170,16 +170,16 @@
 
 				<div>
 					<h3 class="mb-2 text-lg font-semibold text-gray-700">Your Teams</h3>
-					<ul class="space-y-2">
+					<ul class="flex flex-col gap-y-2">
 						{#each teams as team (team.id)}
-							<li
+							<button
 								class="flex cursor-pointer items-center justify-between rounded-md border border-gray-200 p-3 transition-colors hover:bg-gray-50"
 								style="border-left: 4px solid {team.color};"
 								on:click={() => showTeamDetailsView(team)}
 							>
 								<span class="font-medium text-gray-800">{team.name}</span>
 								<span class="text-sm text-gray-500">{team.members.length} members</span>
-							</li>
+							</button>
 						{/each}
 					</ul>
 				</div>
@@ -243,17 +243,17 @@
 			>
 				&times;
 			</button>
-		</div>
-	</div>
+		</button>
+	</button>
 {/if}
 
 {#if showCreateTeamPopUp}
-	<div
+	<button
 		class="popup-overlay fixed inset-0 flex items-center justify-center bg-black bg-opacity-50"
 		on:click={handleOutsideClick}
 		transition:fade
 	>
-		<div
+		<button
 			class="relative w-full max-w-md rounded-lg bg-white p-8 shadow-lg"
 			on:click|stopPropagation
 			transition:fly={{ y: 50, duration: 300 }}
@@ -309,13 +309,13 @@
 			>
 				&times;
 			</button>
-		</div>
-	</div>
+		</button>
+	</button>
 {/if}
 
 <button
 	on:click={toggleTeamPopup}
-	class="rounded-md bg-blue-500 px-4 py-2 font-bold text-white transition-colors hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+	class=" w-fit rounded-md bg-blue-500 px-4 py-2 font-bold text-white hover:bg-blue-600"
 >
 	Teams
 </button>

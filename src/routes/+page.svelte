@@ -21,8 +21,6 @@
 	let plantGrowth = 0;
 	let showAuthPopup = false;
 	let isLogin = true;
-	let email = '';
-	let password = '';
 	let isAuthenticated = false;
 
 	async function saveUserData() {
@@ -129,36 +127,51 @@
 </script>
 
 <div
-	class="flex min-h-screen flex-col items-center justify-center bg-green-100 p-4 {showAuthPopup
+	class="flex h-screen flex-col items-center bg-green-100 p-4 {showAuthPopup
 		? 'blur-sm'
-		: ''}"
+		: ''} overflow-y-auto"
 >
-	<div class="absolute left-4 top-4 cursor-default text-4xl">🌱</div>
-	<div class="absolute right-4 top-4">
-		{#if data?.user}
-			<TeamPopup />
-			<form method="POST" action="?/logout" use:enhance class="space-x-2">
+	<!-- Header Section -->
+	<nav class="flex w-full items-center justify-between">
+		<span class=" w-1/3 cursor-default text-4xl">🌱</span>
+		<h1 class="hidden w-1/3 justify-center text-4xl font-bold text-green-800 md:flex">PlanTo-do</h1>
+		<div class="flex justify-end gap-x-2 md:w-1/3">
+			{#if data?.user}
+				<TeamPopup />
+				<form method="POST" action="?/logout" use:enhance class="space-x-2">
+					<button
+						type="submit"
+						class=" rounded-md bg-red-500 px-4 py-2 font-bold text-white hover:bg-red-600"
+					>
+						Logout
+					</button>
+				</form>
+			{:else}
 				<button
-					type="submit"
-					class="mr-2 rounded bg-red-500 px-4 py-2 font-bold text-white hover:bg-red-600"
+					on:click={toggleAuthPopup}
+					class="rounded-md bg-green-500 px-4 py-2 font-bold text-white hover:bg-green-600"
 				>
-					Logout
+					Login / Register
 				</button>
-			</form>
-		{:else}
-			<button
-				on:click={toggleAuthPopup}
-				class="rounded bg-green-500 px-4 py-2 font-bold text-white hover:bg-green-600"
-			>
-				Login / Register
-			</button>
-		{/if}
-	</div>
+			{/if}
+		</div>
+	</nav>
 
-	<h1 class="mb-8 text-4xl font-bold text-green-800">PlanTo-do</h1>
-	<div class="flex w-full max-w-6xl flex-col gap-8 md:flex-row">
-		<div class="flex-1">
+	<!-- Main Section -->
+	<div class="flex w-full max-w-6xl flex-col md:flex-row">
+		<!-- Left Column: Calendar -->
+		<div class="mt-8 h-full w-full md:w-1/2">
 			<Calendar {todos} {selectedDate} {changeDate} {isDateCompleted} />
+		</div>
+
+		<!-- Right Column: Plant Section -->
+		<div class="mt-4 flex w-full flex-col items-center md:mt-16 md:w-1/2">
+			<PlantSelector {selectedPlant} {changePlant} />
+			<Plant type={selectedPlant} growth={plantGrowth} />
+		</div>
+	</div>
+	<div class="w-full max-w-6xl">
+		<div class="md:w-1/2">
 			<TodoList
 				{todos}
 				{addTodo}
@@ -169,14 +182,13 @@
 				{lockTodo}
 			/>
 		</div>
-		<div class="flex flex-1 flex-col items-center justify-center">
-			<PlantSelector {selectedPlant} {changePlant} />
-			<Plant type={selectedPlant} growth={plantGrowth} />
-		</div>
 	</div>
 </div>
 
+<!-----------------------------------------------POPUPS----------------------------------------------------------->
+
 {#if showAuthPopup}
+	<!-- Auth Popup -->
 	<button
 		class="popup-overlay fixed inset-0 flex items-center justify-center bg-black bg-opacity-50"
 		on:click={handleOutsideClick}
@@ -184,23 +196,16 @@
 		<button class="relative rounded-lg bg-white p-8 shadow-lg" on:click|stopPropagation>
 			<h2 class="mb-4 text-2xl font-bold">{isLogin ? 'Login' : 'Register'}</h2>
 			{#if isLogin}
-				<form class="space-y-4" method="POST" action="?/signIn">
+				<form class="space-y-4" method="POST" use:enhance action="?/signIn">
 					<div>
 						<label for="email" class="mb-1 block">Email:</label>
-						<input
-							type="email"
-							id="email"
-							bind:value={email}
-							required
-							class="w-full rounded border px-3 py-2"
-						/>
+						<input type="email" name="email" required class="w-full rounded border px-3 py-2" />
 					</div>
 					<div>
 						<label for="password" class="mb-1 block">Password:</label>
 						<input
 							type="password"
-							id="password"
-							bind:value={password}
+							name="password"
 							required
 							class="w-full rounded border px-3 py-2"
 						/>
@@ -213,23 +218,16 @@
 					</button>
 				</form>
 			{:else}
-				<form class="space-y-4" method="POST" action="?/signUp">
+				<form class="space-y-4" method="POST" use:enhance action="?/signUp">
 					<div>
 						<label for="email" class="mb-1 block">Email:</label>
-						<input
-							type="email"
-							id="email"
-							bind:value={email}
-							required
-							class="w-full rounded border px-3 py-2"
-						/>
+						<input type="email" name="email" required class="w-full rounded border px-3 py-2" />
 					</div>
 					<div>
 						<label for="password" class="mb-1 block">Password:</label>
 						<input
 							type="password"
-							id="password"
-							bind:value={password}
+							name="password"
 							required
 							class="w-full rounded border px-3 py-2"
 						/>
@@ -247,12 +245,6 @@
 				class="mt-4 text-green-600 hover:text-green-700"
 			>
 				{isLogin ? 'Need an account? Register' : 'Already have an account? Login'}
-			</button>
-			<button
-				on:click={toggleAuthPopup}
-				class="absolute right-2 top-2 text-gray-500 hover:text-gray-700"
-			>
-				&times;
 			</button>
 		</button>
 	</button>

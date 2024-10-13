@@ -161,7 +161,7 @@
 	);
 </script>
 
-<div class="rounded-lg bg-white p-6 shadow-md">
+<div class="h-fit rounded-lg bg-white p-6 shadow-md">
 	<div class="flex items-center justify-between">
 		<h2 class="mb-4 text-2xl font-semibold text-green-700">Tasks</h2>
 		<div class="mb-4">
@@ -186,58 +186,59 @@
 			Add
 		</button>
 	</form>
-
-	{#each Object.entries(groupedTodos) as [date, todosForDate]}
-		<div class="mb-4">
-			<h3 class="mb-2 text-lg font-semibold text-gray-700">{date}</h3>
-			<ul class="space-y-2">
-				{#each todosForDate as todo (todo.id)}
-					<li
-						class={`flex items-center justify-between rounded-md p-3 ${isToday(todo.date) || selectedDate === todo.date ? 'bg-green-50' : getDateColor(todo.date)}`}
-					>
-						<div class="flex items-center gap-x-2">
-							<input
-								type="checkbox"
-								checked={todo.completed}
-								on:change={() => toggleTodo(todo.id)}
-								class="form-checkbox h-5 w-5 text-green-600"
-							/>
-							<span class={todo.completed ? 'text-green-500 line-through' : 'text-green-800'}>
-								{todo.text}
-							</span>
-						</div>
-						<div class="flex w-fit items-center gap-x-2">
-							<span class="text-sm text-green-600">
-								{#if timers[todo.id]}
-									{formatTime(timers[todo.id].localElapsedTime)}
-								{:else}
-									{formatTime(todo.timeSpent)}
-								{/if}
-							</span>
-							<button
-								on:click={() => startTimer(todo.id)}
-								class="mr-2 rounded bg-blue-500 px-2 py-1 text-xs text-white hover:bg-blue-600"
-							>
-								{timers[todo.id] ? 'Stop' : 'Start'}
-							</button>
-							<button
-								on:click={() => lockTodo(todo.id)}
-								class="icon {todo.locked ? 'text-orange-600/60' : 'text-green-600/60'}"
-								title="Keep task"
-							>
-								{todo.locked ? 'lock' : 'lock_open_right'}
-							</button>
-							<button
-								on:click={() => deleteTodo(todo.id)}
-								class="icon text-red-600/80"
-								title="Delete"
-							>
-								delete
-							</button>
-						</div>
-					</li>
-				{/each}
-			</ul>
-		</div>
-	{/each}
+	<div class="h-full overflow-y-scroll">
+		{#each Object.entries(groupedTodos) as [date, todosForDate]}
+			<div class="mb-4">
+				<h3 class="mb-2 text-lg font-semibold text-gray-700">{date}</h3>
+				<ul class="space-y-2">
+					{#each todosForDate as todo (todo.id)}
+						<li
+							class={`flex items-center justify-between rounded-md p-3 ${isToday(todo.date) || selectedDate === todo.date ? 'bg-green-50' : getDateColor(todo.date)}`}
+						>
+							<div class="flex items-center gap-x-2">
+								<input
+									type="checkbox"
+									checked={todo.completed}
+									on:change={() => toggleTodo(todo.id)}
+									class="form-checkbox h-5 w-5 text-green-600"
+								/>
+								<span class={todo.completed ? 'text-green-500 line-through' : 'text-green-800'}>
+									{todo.text}
+								</span>
+							</div>
+							<div class="flex w-fit items-center gap-x-2">
+								<span class="text-sm text-green-600">
+									{#if timers[todo.id]}
+										{formatTime(timers[todo.id].localElapsedTime)}
+									{:else}
+										{formatTime(todo.timeSpent)}
+									{/if}
+								</span>
+								<button
+									on:click={() => startTimer(todo.id)}
+									class="mr-2 rounded bg-blue-500 px-2 py-1 text-xs text-white hover:bg-blue-600"
+								>
+									{timers[todo.id] ? 'Stop' : 'Start'}
+								</button>
+								<button
+									on:click={() => lockTodo(todo.id)}
+									class="icon {todo.locked ? 'text-orange-600/60' : 'text-green-600/60'}"
+									title="Keep task"
+								>
+									{todo.locked ? 'lock' : 'lock_open_right'}
+								</button>
+								<button
+									on:click={() => deleteTodo(todo.id)}
+									class="icon text-red-600/80"
+									title="Delete"
+								>
+									delete
+								</button>
+							</div>
+						</li>
+					{/each}
+				</ul>
+			</div>
+		{/each}
+	</div>
 </div>

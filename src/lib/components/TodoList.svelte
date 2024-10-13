@@ -225,7 +225,7 @@
 									class="icon {todo.locked ? 'text-orange-600/60' : 'text-green-600/60'}"
 									title="Keep task"
 								>
-									{todo.locked ? 'lock' : 'lock_open_right'}
+									{todo.locked ? 'keep_off' : 'keep'}
 								</button>
 								<button
 									on:click={() => deleteTodo(todo.id)}

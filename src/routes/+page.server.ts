@@ -2,51 +2,7 @@ import { fail } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
 import { ClientResponseError } from 'pocketbase';
 
-interface Todo {
-	id: string;
-	text: string;
-	completed: boolean;
-	date: string;
-	timeSpent: number;
-	locked: boolean;
-}
-
-interface DataStore {
-	todos: Todo[];
-	selectedPlant: string;
-	plantGrowth: number;
-}
-
-export const load: PageServerLoad = async ({ locals }) => {
-	if (!locals.pb.authStore.isValid) {
-		return {
-			todos: [],
-			selectedPlant: 'tree',
-			plantGrowth: 0
-		};
-	}
-
-	try {
-		const record = await locals.pb
-			.collection('data_store')
-			.getFirstListItem(`user="${locals.user.id}"`);
-
-		const dataStore: DataStore = record.store || {
-			todos: [],
-			selectedPlant: 'tree',
-			plantGrowth: 0
-		};
-
-		return dataStore;
-	} catch (err) {
-		console.error('Error fetching user data:', err);
-		return {
-			todos: [],
-			selectedPlant: 'tree',
-			plantGrowth: 0
-		};
-	}
-};
+export const load: PageServerLoad = async ({ locals }) => {};
 
 export const actions: Actions = {
 	signIn: async ({ request, locals }) => {

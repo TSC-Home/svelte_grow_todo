@@ -1,5 +1,8 @@
 <script lang="ts">
+	import Calendar from '$lib/components/calendar.svelte';
 	import Navbar from '$lib/components/navbar.svelte';
+	import Plant from '$lib/components/plant.svelte';
+	import Todos from '$lib/components/todos.svelte';
 </script>
 
 <div class="h-screen w-full">
@@ -7,14 +10,30 @@
 		<div>
 			<Navbar />
 		</div>
-		<div class="flex w-full flex-col md:flex-row">
-			<!-- Left Column: Calendar -->
-			<div class="mt-8 md:w-1/2">
-				<div class="w-2/3"></div>
+		<div class="mt-8 flex justify-center">
+			<div class="w-full 2xl:w-1/2">
+				<div class="flex flex-col items-center justify-between lg:flex-row">
+					<div class="w-full lg:w-1/2">
+						<div class="hidden lg:block">
+							<Calendar mobile={true} />
+						</div>
+						<div class="block lg:hidden">
+							<Calendar mobile={false} />
+						</div>
+					</div>
+					<div class="mb-4 w-fit">
+						<Plant />
+					</div>
+				</div>
 			</div>
+		</div>
 
-			<!-- Right Column: Plant Section -->
-			<div class="mt-4 flex w-full flex-col items-center md:mt-16 md:w-1/2">2</div>
+		<div class="flex w-full justify-center">
+			<div class="w-full 2xl:w-1/2">
+				<div class="lg:w-1/2">
+					<Todos />
+				</div>
+			</div>
 		</div>
 	</div>
 </div>

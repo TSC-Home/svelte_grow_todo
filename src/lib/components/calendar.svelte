@@ -2,10 +2,10 @@
 	import { createEventDispatcher } from 'svelte';
 	import { onMount } from 'svelte';
 
-	export let todos: { id: number; text: string; completed: boolean; date: string }[];
-	export let selectedDate: string;
-	export let changeDate: (date: string) => void;
-	export let isDateCompleted: (date: string) => boolean;
+	export let mobile: boolean;
+
+	let selectedDate = new Date().toISOString().split('T')[0];
+	let isDateCompleted: (date: string) => boolean;
 
 	const dispatch = createEventDispatcher();
 
@@ -54,12 +54,7 @@
 	function selectDate(day: number | null) {
 		if (day !== null) {
 			const newDate = new Date(Date.UTC(year, month, day)); // month - 1 to handle 0-based months
-			changeDate(newDate.toISOString().split('T')[0]);
 		}
-	}
-
-	function getTasksForDate(date: string) {
-		return todos.filter((todo) => todo.date === date);
 	}
 
 	function isToday(date: string): boolean {
@@ -73,55 +68,69 @@
 	}
 </script>
 
-<div class="mb-6 rounded-lg bg-white p-6 shadow-md">
-	<div class="mb-4 flex items-center justify-between">
-		<button on:click={prevMonth} class="text-green-600 hover:text-green-800">&lt; Prev</button>
-		<h2 class="text-xl font-semibold">
-			{currentDate.toLocaleString('default', { month: 'long', year: 'numeric' })}
-		</h2>
-		<button on:click={nextMonth} class="text-green-600 hover:text-green-800">Next &gt;</button>
-	</div>
-	<table class="w-full">
-		<thead>
-			<tr>
-				{#each ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'] as day}
-					<th class="p-2 text-center">{day}</th>
-				{/each}
-			</tr>
-		</thead>
-		<tbody>
-			{#each weeks as week}
+{#if mobile}
+	<div class="mb-6 overflow-hidden rounded-lg bg-white p-6 shadow-md">
+		<div class="mb-4 flex items-center justify-between">
+			<button on:click={prevMonth} class="text-green-600 hover:text-green-800">&lt; Prev</button>
+			<h2 class="text-xl font-semibold">
+				{currentDate.toLocaleString('default', { month: 'long', year: 'numeric' })}
+			</h2>
+			<button on:click={nextMonth} class="text-green-600 hover:text-green-800">Next &gt;</button>
+		</div>
+		<table class="w-full">
+			<thead>
 				<tr>
-					{#each week as day}
-						<td class="w-fit p-2 text-center">
-							{#if day !== null}
-								{@const dateString = formatDate(year, month, day)}
-								<button
-									on:click={() => selectDate(day)}
-									class={`h-8 w-8 rounded-full ${
-										selectedDate === dateString
-											? 'bg-green-500 text-white'
-											: isDateCompleted(dateString)
-												? 'bg-yellow-300 text-green-800'
-												: 'hover:bg-green-100'
-									}`}
-								>
-									{day}
-									{#if isToday(dateString)}
-										<div class="absolute z-10 w-8">
-											<span
-												class={`mx-auto mt-1 block h-2 w-2 rounded-full ${
-													selectedDate === dateString ? '' : 'bg-green-400'
-												}`}
-											></span>
-										</div>
-									{/if}
-								</button>
-							{/if}
-						</td>
+					{#each ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'] as day}
+						<th class="p-2 text-center">{day}</th>
 					{/each}
 				</tr>
-			{/each}
-		</tbody>
-	</table>
-</div>
+			</thead>
+			<tbody>
+				{#each weeks as week}
+					<tr>
+						{#each week as day}
+							<td class="w-fit p-2 text-center">
+								{#if day !== null}
+									{@const dateString = formatDate(year, month, day)}
+									<button
+										on:click={() => selectDate(day)}
+										class={`h-8 w-8 rounded-full ${
+											selectedDate === dateString
+												? 'bg-green-500 text-white'
+												: false
+													? 'bg-yellow-300 text-green-800'
+													: 'hover:bg-green-100'
+										}`}
+									>
+										{day}
+										{#if isToday(dateString)}
+											<div class="absolute z-10 w-8">
+												<span
+													class={`mx-auto mt-1 block h-2 w-2 rounded-full ${
+														selectedDate === dateString ? '' : 'bg-green-400'
+													}`}
+												></span>
+											</div>
+										{/if}
+									</button>
+								{/if}
+							</td>
+						{/each}
+					</tr>
+				{/each}
+			</tbody>
+		</table>
+	</div>
+{:else}
+	<div class="mb-6 overflow-hidden rounded-lg bg-white p-4 shadow-md">
+		<div class="flex justify-center">
+			<input
+				class="w-32 text-xl outline-none"
+				type="date"
+				id="calendar"
+				name="calendar"
+				value="2024-10-13"
+			/>
+		</div>
+	</div>
+{/if}

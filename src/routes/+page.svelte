@@ -18,10 +18,10 @@
 			<div class="w-full 2xl:w-1/2">
 				<div class="flex flex-col items-center justify-between lg:flex-row">
 					<div class="w-full lg:w-1/2">
-						<div class="hidden lg:block">
+						<div class="hidden md:block">
 							<Calendar mobile={true} />
 						</div>
-						<div class="block lg:hidden">
+						<div class="block md:hidden">
 							<Calendar mobile={false} />
 						</div>
 					</div>

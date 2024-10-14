@@ -1,5 +1,4 @@
 <script lang="ts">
-	import AuthPopUp from './../lib/components/authPopUp.svelte';
 	import Calendar from '$lib/components/calendar.svelte';
 	import Navbar from '$lib/components/navbar.svelte';
 	import Plant from '$lib/components/plant.svelte';
@@ -12,7 +11,7 @@
 <div class="h-screen w-full">
 	<div class="flex flex-col px-4 py-4">
 		<div>
-			<Navbar {data} />
+			<Navbar />
 		</div>
 		<div class="mt-8 flex justify-center">
 			<div class="w-full 2xl:w-1/2">
@@ -41,5 +40,3 @@
 		</div>
 	</div>
 </div>
-
-<AuthPopUp isOpen={data.isAuthenticationPopupVisible} />

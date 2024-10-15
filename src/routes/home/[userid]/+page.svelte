@@ -4,8 +4,6 @@
 	import Plant from '$lib/components/plant.svelte';
 	import Todos from '$lib/components/todos.svelte';
 	export let data;
-
-	console.log(data);
 </script>
 
 <div class="h-screen w-full">
@@ -34,7 +32,7 @@
 		<div class="flex w-full justify-center">
 			<div class="w-full 2xl:w-1/2">
 				<div class="lg:w-1/2">
-					<Todos bind:data />
+					<Todos bind:tasks={data.tasks} />
 				</div>
 			</div>
 		</div>

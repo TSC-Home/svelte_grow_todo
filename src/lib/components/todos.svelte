@@ -2,36 +2,11 @@
 	import { enhance } from '$app/forms';
 	import { invalidateAll } from '$app/navigation';
 
-	export let data: { tasks: any[] };
-
-	let tasks = data.tasks;
+	export let tasks: any;
 	let newTaskText = '';
 	let filter = 'all';
-
-	function filterTasks(tasks: any[]) {
-		const today = new Date().toISOString().split('T')[0];
-		switch (filter) {
-			case 'tree':
-				return tasks.filter((task) => task.savedate === today);
-			case 'week':
-				const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
-				return tasks.filter((task) => task.savedate >= weekAgo && task.savedate <= today);
-			case 'month':
-				const monthAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
-					.toISOString()
-					.split('T')[0];
-				return tasks.filter((task) => task.savedate >= monthAgo && task.savedate <= today);
-			default:
-				return tasks;
-		}
-	}
-
-	function formatTime(seconds: number) {
-		const hours = Math.floor(seconds / 3600);
-		const minutes = Math.floor((seconds % 3600) / 60);
-		const remainingSeconds = seconds % 60;
-		return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
-	}
+	let checkboxToggle: HTMLFormElement[] = [];
+	let lockcheckbox = Array(tasks.length).fill(false);
 </script>
 
 <div class="h-fit rounded-lg bg-white p-6 shadow-md">
@@ -64,30 +39,38 @@
 		<div class="mb-4">
 			<h3 class="mb-2 text-lg font-semibold text-gray-700">{new Date().toLocaleDateString()}</h3>
 			<ul class="space-y-2">
-				{#each filterTasks(tasks) as task}
+				{#each tasks as task, index}
 					<li class={`flex items-center justify-between rounded-md bg-green-50 p-3`}>
 						<form
 							method="POST"
 							action="?/toggleCheckBox"
-							use:enhance
+							use:enhance={() => {
+								lockcheckbox[index] = true;
+								return async ({ update }) => {
+									await update;
+									lockcheckbox[index] = false;
+								};
+							}}
+							bind:this={checkboxToggle[index]}
 							class="flex items-center gap-x-2"
 						>
 							<input type="hidden" name="id" value={task.id} />
-							<button type="submit" class="form-checkbox h-6 w-6 text-green-600">
-								<input
-									type="checkbox"
-									name="checked"
-									class="form-checkbox h-5 w-5 text-green-600"
-									checked={task.checked}
-									readonly
-								/>
-							</button>
-							<span class={task.checked ? 'text-green-500 line-through' : 'text-green-800'}>
+							<input
+								type="checkbox"
+								name="checked"
+								class="form-checkbox h-5 w-5 text-green-600"
+								checked={task.checked}
+								disabled={lockcheckbox[index]}
+								on:change={() => {
+									checkboxToggle[index].requestSubmit();
+								}}
+							/>
+							<span class={task.checked ? 'text-green-800' : 'text-green-800'}>
 								{task.text}
 							</span>
 						</form>
 						<div class="flex w-fit items-center gap-x-2">
-							<span class="text-sm text-green-600">{formatTime(task.time || 0)}</span>
+							<span class="text-sm text-green-600">00:00:00</span>
 							<form method="POST" action="?/toggleTimer" use:enhance>
 								<input type="hidden" name="id" value={task.id} />
 								<button

@@ -17,7 +17,6 @@ export const actions: Actions = {
 	addTask: async ({ request, locals }) => {
 		const formData = await request.formData();
 		const text = formData.get('text') as string;
-		console.log(text);
 		if (!text) {
 			return { success: false, error: 'Task text is required' };
 		}
@@ -32,7 +31,6 @@ export const actions: Actions = {
 				savedate: new Date().toISOString().split('T')[0],
 				users: [locals.user.id]
 			});
-			console.log('success');
 			return { success: true };
 		} catch (err) {
 			console.error('Error adding task:', err);
@@ -45,7 +43,7 @@ export const actions: Actions = {
 		const id = formData.get('id') as string;
 
 		try {
-			const task = await locals.pb.collection('tasks').getOne(id);
+			let task = await locals.pb.collection('tasks').getOne(id);
 			await locals.pb.collection('tasks').update(id, {
 				checked: !task.checked
 			});

@@ -34,7 +34,7 @@
 		<div class="flex w-full justify-center">
 			<div class="w-full 2xl:w-1/2">
 				<div class="lg:w-1/2">
-					<Todos tasks={data.tasks} />
+					<Todos bind:data />
 				</div>
 			</div>
 		</div>

@@ -6,9 +6,7 @@
 	let loading: boolean = false;
 </script>
 
-<div
-	class="flex min-h-screen items-center justify-center bg-gradient-to-br from-green-400 to-green-600 p-4"
->
+<div class="flex min-h-screen items-center justify-center p-4">
 	<div class="w-full max-w-md" in:fade={{ duration: 300 }}>
 		<div class="mb-6 text-center">
 			<h1 class="text-5xl">🌱</h1>
@@ -95,3 +93,11 @@
 		</div>
 	</div>
 </div>
+
+<style>
+	:root {
+		background-image: radial-gradient(rgba(25, 236, 102, 0.25) 2px, transparent 2px);
+		background-size: 32px 32px;
+		background-color: #2cbc61;
+	}
+</style>

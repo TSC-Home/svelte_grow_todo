@@ -3,7 +3,7 @@ import PocketBase from 'pocketbase';
 
 /** @type {import('@sveltejs/kit').Handle} */
 export async function handle({ event, resolve }) {
-	event.locals.pb = new PocketBase('https://grow-tasks.krio.synthetix.me');
+	event.locals.pb = new PocketBase('https://pocketbase-ukcgwowkk8so484cwckg4c0c.thisismyspacesofuckof.com/');
 
 	// load the store data from the request cookie string
 	event.locals.pb.authStore.loadFromCookie(event.request.headers.get('cookie') || '');

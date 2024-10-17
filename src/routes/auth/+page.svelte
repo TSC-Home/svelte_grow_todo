@@ -19,8 +19,8 @@
 					<h2 class="mb-6 text-center text-2xl font-bold text-gray-800">
 						{register ? 'Create Account' : 'Welcome Back'}
 					</h2>
-					<formS
-						method="post"
+					<form
+						method="POST"
 						action={register ? '?/signUp' : '?/signIn'}
 						use:enhance={() => {
 							loading = true;
@@ -83,7 +83,7 @@
 								{loading ? 'Loading...' : register ? 'Sign Up' : 'Sign In'}
 							</button>
 						</div>
-					</formS>
+					</form>
 				</div>
 				<div class="border-t border-gray-100 bg-gray-50 px-8 py-6">
 					<p class="text-center text-xs text-gray-600">

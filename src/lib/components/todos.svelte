@@ -1,11 +1,22 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
+	import { goto } from '$app/navigation';
+	import { page } from '$app/stores';
+	import { createEventDispatcher } from 'svelte';
 
 	export let tasks: any;
 	let newTaskText = '';
-	let filter = 'all';
+
+	let filter: any; // Default value
+
 	let checkboxToggle: HTMLFormElement[] = [];
 	let lockcheckbox = Array(tasks.length).fill(false);
+
+	function setUrlQuery(key: string, value: string) {
+		const url = new URL($page.url);
+		url.searchParams.set(key, value);
+		goto(url.toString());
+	}
 </script>
 
 <div class="h-fit rounded-lg bg-white p-6 shadow-md">
@@ -14,7 +25,7 @@
 		<div class="mb-4">
 			<select class="rounded border p-1" bind:value={filter}>
 				<option value="all">All Tasks</option>
-				<option value="tree">Tree View (Selected Date)</option>
+				<option selected value="tree">Tree View (Selected Date)</option>
 				<option value="week">This Week</option>
 				<option value="month">This Month</option>
 			</select>

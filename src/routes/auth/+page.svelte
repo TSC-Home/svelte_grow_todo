@@ -7,7 +7,7 @@
 </script>
 
 <div class="h-screen">
-	<div class="bg flex h-full items-center justify-center p-4">
+	<div class=" flex h-full items-center justify-center p-4">
 		<div class="w-full max-w-md" in:fade={{ duration: 300 }}>
 			<div class="mb-6 text-center">
 				<h1 class="text-5xl">🌱</h1>
@@ -102,7 +102,7 @@
 </div>
 
 <style>
-	.bg {
+	:root {
 		background: #48b672;
 		background: -webkit-linear-gradient(0deg, #48b672 0%, #41da79 100%);
 		background: linear-gradient(0deg, #48b672 0%, #41da79 100%);

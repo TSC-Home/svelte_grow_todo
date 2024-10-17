@@ -1,6 +1,7 @@
 <script lang="ts">
+	import { goto } from '$app/navigation';
 	import { createEventDispatcher } from 'svelte';
-	import { onMount } from 'svelte';
+	import { page } from '$app/stores';
 
 	export let mobile: boolean;
 
@@ -53,7 +54,8 @@
 
 	function selectDate(day: number | null) {
 		if (day !== null) {
-			const newDate = new Date(Date.UTC(year, month, day)); // month - 1 to handle 0-based months
+			selectedDate = new Date(Date.UTC(year, month, day)).toISOString().split('T')[0]; // month - 1 to handle 0-based months#
+			setUrlQuery('date', selectedDate);
 		}
 	}
 
@@ -65,6 +67,12 @@
 
 	function formatDate(year: number, month: number, day: number): string {
 		return `${year}-${(month + 1).toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
+	}
+
+	function setUrlQuery(key: string, value: string) {
+		const url = new URL($page.url);
+		url.searchParams.set(key, value);
+		goto(url.toString());
 	}
 </script>
 

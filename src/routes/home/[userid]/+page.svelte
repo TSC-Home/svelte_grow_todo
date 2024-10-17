@@ -4,6 +4,9 @@
 	import Plant from '$lib/components/plant.svelte';
 	import Todos from '$lib/components/todos.svelte';
 	export let data;
+
+	let selectedPlant: string = 'flower';
+	let plantGrowth = 50;
 </script>
 
 <div class="h-screen w-full">
@@ -23,7 +26,7 @@
 						</div>
 					</div>
 					<div class="mb-4 w-fit">
-						<Plant />
+						<Plant {selectedPlant} {plantGrowth} />
 					</div>
 				</div>
 			</div>
@@ -38,3 +41,9 @@
 		</div>
 	</div>
 </div>
+
+<style>
+	:root {
+		background-color: #dcfce7;
+	}
+</style>

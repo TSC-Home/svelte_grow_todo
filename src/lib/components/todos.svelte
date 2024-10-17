@@ -2,20 +2,34 @@
 	import { enhance } from '$app/forms';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
-	import { createEventDispatcher } from 'svelte';
+	import { browser } from '$app/environment';
+	import { onMount } from 'svelte';
 
 	export let tasks: any;
 	let newTaskText = '';
 
-	let filter: any; // Default value
-
+	let filter: 'all' | 'tree' | 'week' | 'month' = 'tree';
+	let selectedDate: Date = new Date();
 	let checkboxToggle: HTMLFormElement[] = [];
 	let lockcheckbox = Array(tasks.length).fill(false);
 
 	function setUrlQuery(key: string, value: string) {
-		const url = new URL($page.url);
-		url.searchParams.set(key, value);
-		goto(url.toString());
+		const urlInstance = new URL($page.url);
+		urlInstance.searchParams.set(key, value);
+		return urlInstance;
+	}
+
+	$: if (browser) {
+		console.log(filter);
+		goto(setUrlQuery('filter', filter));
+	}
+
+	$: {
+		const urlparams = new URLSearchParams($page.url.search);
+		if (urlparams.has('date')) {
+			selectedDate = new Date(urlparams.get('date') ?? '');
+			console.log(selectedDate);
+		}
 	}
 </script>
 
@@ -32,6 +46,7 @@
 		</div>
 	</div>
 	<form method="POST" action="?/addTask" use:enhance class="mb-4">
+		<input name="date" type="hidden" disabled value={selectedDate} />
 		<input
 			name="text"
 			bind:value={newTaskText}

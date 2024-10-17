@@ -20,7 +20,7 @@
 						{register ? 'Create Account' : 'Welcome Back'}
 					</h2>
 					<form
-						method="POST"
+						method="post"
 						action={register ? '?/signUp' : '?/signIn'}
 						use:enhance={() => {
 							loading = true;

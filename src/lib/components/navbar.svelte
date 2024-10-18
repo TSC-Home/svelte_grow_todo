@@ -15,7 +15,12 @@
 </script>
 
 <nav class="flex w-full items-center justify-between">
-	<span class=" w-1/3 cursor-default text-4xl">🌱</span>
+	<button
+		on:click={() => {
+			goto('/');
+		}}
+		class=" w-1/3 cursor-default text-4xl">🌱</button
+	>
 	<h1 class="hidden w-1/3 justify-center text-4xl font-bold text-green-800 md:flex">Grow Tasks</h1>
 	<div class="flex justify-end gap-x-2 md:w-1/3">
 		<button

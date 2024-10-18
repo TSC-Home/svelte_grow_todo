@@ -26,17 +26,11 @@
 									Create
 								</button>
 							</div>
+							<span class="-mt-1 mb-2 text-sm text-green-800/60">Select your required team.</span>
 							<button
-								class="rounded-md bg-green-50 px-2 py-2 text-start text-green-800 hover:bg-green-100"
-								>Helmut´s Team</button
-							>
-							<button
-								class="rounded-md bg-green-50 px-2 py-2 text-start text-green-800 hover:bg-green-100"
-								>Helmut´s Team</button
-							>
-							<button
-								class="rounded-md bg-green-50 px-2 py-2 text-start text-green-800 hover:bg-green-100"
-								>Helmut´s Team</button
+								class="flex items-center justify-between rounded-md bg-green-50 px-2 py-2 text-start text-green-800 hover:bg-green-100"
+								><span>Helmut´s Team</span>
+								<button class="icon text-red-500/80 hover:text-red-500">delete</button></button
 							>
 						</div>
 					</div>
@@ -58,47 +52,40 @@
 									>Invite
 								</button>
 							</div>
-							<div class="mt-2 flex flex-col space-y-2">
-								<div
-									class="flex w-full items-center justify-between rounded-md bg-green-100 px-2 py-2"
-								>
-									<span class="text-green-800">Helmut Müller</span>
-									<div class="flex w-fit items-center gap-x-2">
-										<form>
-											<input type="hidden" name="id" />
+							<table
+								class="mt-4 w-full table-auto overflow-hidden rounded-lg border bg-green-50/50"
+							>
+								<thead class="rounded-md bg-green-100">
+									<tr class="rounded-md text-sm text-green-800">
+										<th class="px-3 py-2 text-left">Name</th>
+										<th class="px-3 py-2 text-left">Positon</th>
+										<th class="px-3 py-2 text-left">Date added</th>
+										<th></th>
+									</tr>
+								</thead>
+								<tbody class="text-sm font-light text-green-600">
+									<tr class="">
+										<td class="px-3 py-3 text-left">Max Mustermann</td>
+										<td class="px-3 py-3 text-left">Administrator</td>
+										<td class="px-3 py-3 text-left">2024-10-18</td>
+										<td class="px-3 py-3 text-left">
 											<button type="submit" class="icon pt-1 text-red-600/80" title="Remove member"
 												>person_remove</button
 											>
-										</form>
-									</div>
-								</div>
-								<div
-									class="flex w-full items-center justify-between rounded-md bg-green-100 px-2 py-2"
-								>
-									<span class="text-green-800">Helmut Müller</span>
-									<div class="flex w-fit items-center gap-x-2">
-										<form>
-											<input type="hidden" name="id" />
+										</td>
+									</tr>
+									<tr class="">
+										<td class="px-3 py-3 text-left">Anna Beispiel</td>
+										<td class="px-3 py-3 text-left">Member</td>
+										<td class="px-3 py-3 text-left">2024-10-17</td>
+										<td class="px-3 py-3 text-left">
 											<button type="submit" class="icon pt-1 text-red-600/80" title="Remove member"
 												>person_remove</button
 											>
-										</form>
-									</div>
-								</div>
-								<div
-									class="flex w-full items-center justify-between rounded-md bg-green-100 px-2 py-2"
-								>
-									<span class="text-green-800">Helmut Müller</span>
-									<div class="flex w-fit items-center gap-x-2">
-										<form>
-											<input type="hidden" name="id" />
-											<button type="submit" class="icon pt-1 text-red-600/80" title="Remove member"
-												>person_remove</button
-											>
-										</form>
-									</div>
-								</div>
-							</div>
+										</td>
+									</tr>
+								</tbody>
+							</table>
 						</div>
 					</div>
 				</div>

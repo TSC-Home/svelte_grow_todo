@@ -21,7 +21,7 @@
 		<button
 			on:click={() => {
 				if (isTeamPage) {
-					history.back();
+					goto('/home'); //history.back();
 				} else {
 					goto(window.location.pathname + '/team');
 				}

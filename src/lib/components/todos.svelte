@@ -9,7 +9,7 @@
 	let newTaskText = '';
 
 	let filter: 'all' | 'tree' | 'week' | 'month' = 'tree';
-	let selectedDate: Date = new Date();
+	let selectedDate: string = new Date().toDateString();
 	let checkboxToggle: HTMLFormElement[] = [];
 	let lockcheckbox = Array(tasks.length).fill(false);
 
@@ -27,7 +27,8 @@
 	$: {
 		const urlparams = new URLSearchParams($page.url.search);
 		if (urlparams.has('date')) {
-			selectedDate = new Date(urlparams.get('date') ?? '');
+			const dateParam = urlparams.get('date');
+			selectedDate = dateParam ? new Date(dateParam).toDateString() : new Date().toDateString();
 			console.log(selectedDate);
 		}
 	}
@@ -46,7 +47,7 @@
 		</div>
 	</div>
 	<form method="POST" action="?/addTask" use:enhance class="mb-4">
-		<input name="date" type="hidden" disabled value={selectedDate} />
+		<input name="date" type="hidden" disabled bind:value={selectedDate} />
 		<input
 			name="text"
 			bind:value={newTaskText}

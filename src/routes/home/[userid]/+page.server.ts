@@ -45,7 +45,7 @@ export const actions: Actions = {
 		const formData = await request.formData();
 		const text = formData.get('text') as string;
 		const dateParam = formData.get('data') as string;
-		console.log(url);
+		console.log(dateParam);
 
 		// Konvertiere dateParam zu einem Date-Objekt oder nimm das aktuelle Datum, falls keins angegeben ist
 		const selectedDate = dateParam ? new Date(dateParam) : new Date();

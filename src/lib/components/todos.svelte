@@ -9,7 +9,7 @@
 	let newTaskText = '';
 
 	let filter: 'all' | 'tree' | 'week' | 'month' = 'tree';
-	let selectedDate: string = new Date().toDateString();
+	let selectedDate: string = new Date().toISOString().split('T')[0];
 	let checkboxToggle: HTMLFormElement[] = [];
 	let lockcheckbox = Array(tasks.length).fill(false);
 
@@ -28,7 +28,7 @@
 		const urlparams = new URLSearchParams($page.url.search);
 		if (urlparams.has('date')) {
 			const dateParam = urlparams.get('date');
-			selectedDate = dateParam ? new Date(dateParam).toDateString() : new Date().toDateString();
+			selectedDate = dateParam || new Date().toISOString().split('T')[0];
 			console.log(selectedDate);
 		}
 	}
@@ -47,7 +47,7 @@
 		</div>
 	</div>
 	<form method="POST" action="?/addTask" use:enhance class="mb-4">
-		<input name="date" type="hidden" disabled bind:value={selectedDate} />
+		<input name="date" type="hidden" value={selectedDate} />
 		<input
 			name="text"
 			bind:value={newTaskText}
@@ -63,7 +63,9 @@
 	</form>
 	<div class="h-full">
 		<div class="mb-4">
-			<h3 class="mb-2 text-lg font-semibold text-gray-700">{new Date().toLocaleDateString()}</h3>
+			<h3 class="mb-2 text-lg font-semibold text-gray-700">
+				{new Date(selectedDate).toLocaleDateString()}
+			</h3>
 			<ul class="space-y-2">
 				{#each tasks as task, index}
 					<li class={`flex items-center justify-between rounded-md bg-green-50 p-3`}>

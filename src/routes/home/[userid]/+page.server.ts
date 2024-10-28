@@ -41,15 +41,16 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 };
 
 export const actions: Actions = {
-	addTask: async ({ request, locals, url }) => {
+	addTask: async ({ request, locals }) => {
 		const formData = await request.formData();
 		const text = formData.get('text') as string;
-		const dateParam = formData.get('data') as string;
-		console.log(dateParam);
+		const dateParam = formData.get('date') as string;
+		console.log('Date from form:', dateParam);
 
 		// Konvertiere dateParam zu einem Date-Objekt oder nimm das aktuelle Datum, falls keins angegeben ist
 		const selectedDate = dateParam ? new Date(dateParam) : new Date();
-		console.log(selectedDate, dateParam);
+		console.log('Selected Date:', selectedDate);
+
 		if (!text) {
 			return { success: false, error: 'Task text is required' };
 		}

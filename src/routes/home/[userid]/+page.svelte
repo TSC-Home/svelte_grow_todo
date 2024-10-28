@@ -5,8 +5,7 @@
 	import Todos from '$lib/components/todos.svelte';
 	export let data;
 
-	let selectedPlant: string = 'flower';
-	let plantGrowth = 50;
+	let selectedPlant: string = 'tree';
 </script>
 
 <div class="h-screen w-full">
@@ -26,7 +25,7 @@
 						</div>
 					</div>
 					<div class="mb-4 w-fit">
-						<Plant {selectedPlant} {plantGrowth} />
+						<Plant {selectedPlant} bind:plantGrowth={data.completedTasksInProzent} />
 					</div>
 				</div>
 			</div>

@@ -1,6 +1,6 @@
 <script lang="ts">
 	export let selectedPlant = 'tree';
-	export let plantGrowth = 10;
+	export let plantGrowth;
 
 	const plants: any = {
 		tree: ['🌱', '🌿', '🌳'],

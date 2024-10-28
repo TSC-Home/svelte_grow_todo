@@ -17,6 +17,7 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 	console.log('Ausgewähltes Datum:', selectedDate.toISOString());
 
 	let filterQuery = '';
+	let completedTasksInProzent = 0;
 	let tasksToUpdate = [];
 
 	try {
@@ -26,10 +27,10 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 		} else if (filter === 'tree') {
 			// Nur Aufgaben für das ausgewählte Datum, die nicht erledigt sind
 			if (selectedDateString !== todayString) {
-				filterQuery = `((checked = false) && (date ~ "${selectedDateString}"))`;
+				filterQuery = ` (date ~ "${selectedDateString}")`;
 			} else {
 				// Zeige alte und aktuelle Aufgaben für heute
-				filterQuery = `((date < "${today.toISOString()}" && checked = false) || date = "${today.toISOString()}")`;
+				filterQuery = `((date < "${today.toISOString()}") || date = "${today.toISOString()}")`;
 			}
 		} else if (filter === 'week') {
 			// Aufgaben für diese Woche (bis Sonntag)
@@ -74,12 +75,16 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 			});
 			task.date = today.toISOString(); // Aktualisiere das Datum im Task-Objekt
 		}
-
+		//wie viel prozent der aufgaben wurden erledigt
+		completedTasksInProzent = Math.round(
+			(tasks.filter((task) => task.checked).length / tasks.length) * 100
+		);
 		// Gib die Aufgaben, den Filter und das ausgewählte Datum zurück
 		return {
 			tasks,
 			filter,
-			selectedDate: selectedDate.toISOString() // Gib das vollständige Datum zurück
+			selectedDate: selectedDate.toISOString(), // Gib das vollständige Datum zurück
+			completedTasksInProzent
 		};
 	} catch (err) {
 		console.error('Fehler beim Abrufen oder Aktualisieren der Aufgaben:', err);

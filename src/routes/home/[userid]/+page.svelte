@@ -9,6 +9,8 @@
 	let selectedPlant: string = 'tree';
 	let selectedTaskbyId: any;
 
+	$: console.log(data.completedTasksInProzent);
+
 	$: if (data.selectedTask) {
 		selectedTaskbyId = data.tasks.find((task) => task.id === data.selectedTask);
 	}

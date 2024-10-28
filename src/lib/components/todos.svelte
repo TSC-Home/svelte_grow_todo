@@ -107,29 +107,25 @@
 			</h3>
 			<ul class="space-y-2">
 				{#each tasks as task, index (task.id)}
-					<button
+					<li
 						class="flex w-full items-center justify-between rounded-md bg-green-50 p-3 transition-all duration-300"
 						data-task-id={task.id}
-						on:click={() => handleTaskClick(task.id)}
 						in:receive|local={{ key: task.id }}
 						out:send|local={{ key: task.id }}
 						animate:flip={{ duration: 300 }}
 					>
-						<!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
-						<!-- svelte-ignore a11y-click-events-have-key-events -->
 						<form
 							method="POST"
 							action="?/toggleCheckBox"
 							use:enhance={() => {
 								lockcheckbox[index] = true;
 								return async ({ update }) => {
-									await update;
+									await update();
 									lockcheckbox[index] = false;
 								};
 							}}
 							bind:this={checkboxToggle[index]}
 							class="flex items-center gap-x-2"
-							on:click|stopPropagation
 						>
 							<input type="hidden" name="id" value={task.id} />
 							<input
@@ -178,7 +174,7 @@
 								<button type="submit" class="icon text-red-600/80" title="Delete"> delete </button>
 							</form>
 						</div>
-					</button>
+					</li>
 				{/each}
 			</ul>
 		</div>

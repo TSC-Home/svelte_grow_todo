@@ -4,6 +4,9 @@
 	import { page } from '$app/stores';
 	import { browser } from '$app/environment';
 	import { onMount } from 'svelte';
+	import { fade, slide, fly, crossfade } from 'svelte/transition';
+	import { flip } from 'svelte/animate';
+	import { quintOut } from 'svelte/easing';
 
 	export let tasks: any;
 	let newTaskText = '';
@@ -12,6 +15,12 @@
 	let selectedDate: string = new Date().toISOString().split('T')[0];
 	let checkboxToggle: HTMLFormElement[] = [];
 	let lockcheckbox = Array(tasks.length).fill(false);
+
+	const [send, receive] = crossfade({
+		duration: 400,
+		easing: quintOut,
+		fallback: (node, params) => slide(node, { duration: 400 })
+	});
 
 	function setUrlQuery(key: string, value: string) {
 		const urlInstance = new URL($page.url);
@@ -32,9 +41,24 @@
 			console.log(selectedDate);
 		}
 	}
+
+	// Verbesserte Form-Handler
+	async function handleDelete({ formElement }: { formElement: HTMLFormElement }) {
+		const taskId = (formElement.querySelector('input[name="id"]') as HTMLInputElement)?.value;
+		const taskElement = document.querySelector(`[data-task-id="${taskId}"]`);
+		if (taskElement) {
+			(taskElement as HTMLElement).style.height = `${(taskElement as HTMLElement).offsetHeight}px`;
+			(taskElement as HTMLElement).style.overflow = 'hidden';
+		}
+		await new Promise((resolve) => setTimeout(resolve, 400)); // Wait for the transition
+		if (taskElement) {
+			(taskElement as HTMLElement).style.height = '0';
+			(taskElement as HTMLElement).style.opacity = '0';
+		}
+	}
 </script>
 
-<div class="h-fit rounded-lg bg-white p-6 shadow-md">
+<div class="h-fit rounded-lg bg-white p-6 shadow-md" transition:fade|local={{ duration: 200 }}>
 	<div class="flex items-center justify-between">
 		<h2 class="mb-4 text-2xl font-semibold text-green-700">Tasks</h2>
 		<div class="mb-4">
@@ -62,13 +86,19 @@
 		</button>
 	</form>
 	<div class="h-full">
-		<div class="mb-4">
+		<div class="mb-4" in:fade|local={{ duration: 150, delay: 50 }}>
 			<h3 class="mb-2 text-lg font-semibold text-gray-700">
 				{new Date(selectedDate).toLocaleDateString()}
 			</h3>
 			<ul class="space-y-2">
-				{#each tasks as task, index}
-					<li class={`flex items-center justify-between rounded-md bg-green-50 p-3`}>
+				{#each tasks as task, index (task.id)}
+					<li
+						class="flex items-center justify-between rounded-md bg-green-50 p-3 transition-all duration-300"
+						data-task-id={task.id}
+						in:receive|local={{ key: task.id }}
+						out:send|local={{ key: task.id }}
+						animate:flip={{ duration: 300 }}
+					>
 						<form
 							method="POST"
 							action="?/toggleCheckBox"
@@ -93,7 +123,11 @@
 									checkboxToggle[index].requestSubmit();
 								}}
 							/>
-							<span class={task.checked ? 'text-green-800' : 'text-green-800'}>
+							<span
+								class="transition-all duration-200 {task.checked
+									? 'text-green-800/60 line-through'
+									: 'text-green-800'}"
+							>
 								{task.text}
 							</span>
 						</form>
@@ -112,13 +146,15 @@
 								<input type="hidden" name="id" value={task.id} />
 								<button
 									type="submit"
-									class="icon {task.pinned ? 'text-orange-600/60' : 'text-green-600/60'}"
+									class="icon {task.pinned
+										? 'text-orange-600/60'
+										: 'text-green-600/60'} transition-colors duration-200"
 									title="Keep task"
 								>
 									{task.pinned ? 'keep_off' : 'keep'}
 								</button>
 							</form>
-							<form method="POST" action="?/deleteTask" use:enhance>
+							<form method="POST" action="?/deleteTask" use:enhance={handleDelete}>
 								<input type="hidden" name="id" value={task.id} />
 								<button type="submit" class="icon text-red-600/80" title="Delete"> delete </button>
 							</form>

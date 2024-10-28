@@ -22,14 +22,17 @@
 		fallback: (node, params) => slide(node, { duration: 400 })
 	});
 
-	function setUrlQuery(key: string, value: string) {
+	function setUrlQuery(key: string, value: string | null) {
 		const urlInstance = new URL($page.url);
-		urlInstance.searchParams.set(key, value);
+		if (value) {
+			urlInstance.searchParams.set(key, value);
+		} else {
+			urlInstance.searchParams.delete(key); // Entfernt den Parameter, wenn 'value' null ist
+		}
 		return urlInstance;
 	}
 
 	$: if (browser) {
-		console.log(filter);
 		goto(setUrlQuery('filter', filter));
 	}
 
@@ -38,11 +41,23 @@
 		if (urlparams.has('date')) {
 			const dateParam = urlparams.get('date');
 			selectedDate = dateParam || new Date().toISOString().split('T')[0];
-			console.log(selectedDate);
 		}
 	}
 
-	// Verbesserte Form-Handler
+	// Funktion, um beim Klick die Task-ID in die URL als 'selected' zu setzen oder zu entfernen
+	function handleTaskClick(taskId: string) {
+		const urlparams = new URLSearchParams($page.url.search);
+		const currentSelectedId = urlparams.get('selected');
+
+		if (currentSelectedId === taskId) {
+			// Wenn die Task-ID bereits ausgewählt ist, entferne den Parameter 'selected'
+			goto(setUrlQuery('selected', null));
+		} else {
+			// Andernfalls füge die Task-ID als 'selected' hinzu
+			goto(setUrlQuery('selected', taskId));
+		}
+	}
+
 	async function handleDelete({ formElement }: { formElement: HTMLFormElement }) {
 		const taskId = (formElement.querySelector('input[name="id"]') as HTMLInputElement)?.value;
 		const taskElement = document.querySelector(`[data-task-id="${taskId}"]`);
@@ -50,7 +65,7 @@
 			(taskElement as HTMLElement).style.height = `${(taskElement as HTMLElement).offsetHeight}px`;
 			(taskElement as HTMLElement).style.overflow = 'hidden';
 		}
-		await new Promise((resolve) => setTimeout(resolve, 400)); // Wait for the transition
+		await new Promise((resolve) => setTimeout(resolve, 400)); // Warte auf die Transition
 		if (taskElement) {
 			(taskElement as HTMLElement).style.height = '0';
 			(taskElement as HTMLElement).style.opacity = '0';
@@ -92,13 +107,16 @@
 			</h3>
 			<ul class="space-y-2">
 				{#each tasks as task, index (task.id)}
-					<li
-						class="flex items-center justify-between rounded-md bg-green-50 p-3 transition-all duration-300"
+					<button
+						class="flex w-full items-center justify-between rounded-md bg-green-50 p-3 transition-all duration-300"
 						data-task-id={task.id}
+						on:click={() => handleTaskClick(task.id)}
 						in:receive|local={{ key: task.id }}
 						out:send|local={{ key: task.id }}
 						animate:flip={{ duration: 300 }}
 					>
+						<!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
+						<!-- svelte-ignore a11y-click-events-have-key-events -->
 						<form
 							method="POST"
 							action="?/toggleCheckBox"
@@ -111,6 +129,7 @@
 							}}
 							bind:this={checkboxToggle[index]}
 							class="flex items-center gap-x-2"
+							on:click|stopPropagation
 						>
 							<input type="hidden" name="id" value={task.id} />
 							<input
@@ -159,7 +178,7 @@
 								<button type="submit" class="icon text-red-600/80" title="Delete"> delete </button>
 							</form>
 						</div>
-					</li>
+					</button>
 				{/each}
 			</ul>
 		</div>

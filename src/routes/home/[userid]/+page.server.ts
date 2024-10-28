@@ -4,6 +4,7 @@ import { error } from '@sveltejs/kit';
 export const load: PageServerLoad = async ({ locals, url }) => {
 	const filter = url.searchParams.get('filter') || 'tree';
 	const dateParam = url.searchParams.get('date');
+	const selectedTask = url.searchParams.get('selected');
 
 	// Stelle sicher, dass das heutige Datum auf den aktuellen Zeitpunkt gesetzt wird
 	const today = new Date();
@@ -84,7 +85,8 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 			tasks,
 			filter,
 			selectedDate: selectedDate.toISOString(), // Gib das vollständige Datum zurück
-			completedTasksInProzent
+			completedTasksInProzent,
+			selectedTask
 		};
 	} catch (err) {
 		console.error('Fehler beim Abrufen oder Aktualisieren der Aufgaben:', err);

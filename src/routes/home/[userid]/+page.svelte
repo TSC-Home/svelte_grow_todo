@@ -3,9 +3,15 @@
 	import Navbar from '$lib/components/navbar.svelte';
 	import Plant from '$lib/components/plant.svelte';
 	import Todos from '$lib/components/todos.svelte';
+	import TaskEditor from '$lib/components/taskEditor.svelte';
 	export let data;
 
 	let selectedPlant: string = 'tree';
+	let selectedTaskbyId: any;
+
+	$: if (data.selectedTask) {
+		selectedTaskbyId = data.tasks.find((task) => task.id === data.selectedTask);
+	}
 </script>
 
 <div class="h-screen w-full">
@@ -25,7 +31,11 @@
 						</div>
 					</div>
 					<div class="mb-4 w-fit">
-						<Plant {selectedPlant} bind:plantGrowth={data.completedTasksInProzent} />
+						{#if selectedTaskbyId}
+							<TaskEditor bind:task={selectedTaskbyId} />
+						{:else}
+							<Plant {selectedPlant} bind:plantGrowth={data.completedTasksInProzent} />
+						{/if}
 					</div>
 				</div>
 			</div>

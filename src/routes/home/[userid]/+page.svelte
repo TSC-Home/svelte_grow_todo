@@ -34,7 +34,7 @@
 					</div>
 					<div class="mb-4 w-fit">
 						{#if selectedTaskbyId}
-							<TaskEditor bind:task={selectedTaskbyId} />
+							<TaskEditor />
 						{:else}
 							<Plant {selectedPlant} bind:plantGrowth={data.completedTasksInProzent} />
 						{/if}

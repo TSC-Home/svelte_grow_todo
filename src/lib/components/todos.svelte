@@ -7,6 +7,7 @@
 	import { fade, slide, fly, crossfade } from 'svelte/transition';
 	import { flip } from 'svelte/animate';
 	import { quintOut } from 'svelte/easing';
+	import Timer from './timer.svelte';
 
 	export let tasks: any;
 	let newTaskText = '';
@@ -139,6 +140,16 @@
 								}}
 							/>
 							<span
+								role="button"
+								tabindex="0"
+								aria-label="Toggle Task"
+								aria-roledescription="button"
+								on:click={() => handleTaskClick(task.id)}
+								on:keydown={(e) => {
+									if (e.key === 'Enter') {
+										handleTaskClick(task.id);
+									}
+								}}
 								class="transition-all duration-200 {task.checked
 									? 'text-green-800/60 line-through'
 									: 'text-green-800'}"
@@ -147,16 +158,8 @@
 							</span>
 						</form>
 						<div class="flex w-fit items-center gap-x-2">
-							<span class="text-sm text-green-600">00:00:00</span>
-							<form method="POST" action="?/toggleTimer" use:enhance>
-								<input type="hidden" name="id" value={task.id} />
-								<button
-									type="submit"
-									class="mr-2 rounded bg-blue-500 px-2 py-1 text-xs text-white hover:bg-blue-600"
-								>
-									{task.timer_running ? 'Stop' : 'Start'}
-								</button>
-							</form>
+							<!-- //timer -->
+							<Timer bind:task />
 							<form method="POST" action="?/togglePin" use:enhance>
 								<input type="hidden" name="id" value={task.id} />
 								<button

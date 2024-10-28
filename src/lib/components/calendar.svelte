@@ -136,7 +136,7 @@
 					<button
 						on:click={prevMonth}
 						class="text-green-600 hover:text-green-800"
-						transition:fade|local={{ duration: 200 }}
+						transition:fade={{ duration: 200 }}
 					>
 						&lt; Prev
 					</button>
@@ -148,14 +148,14 @@
 					<button
 						on:click={nextMonth}
 						class="text-green-600 hover:text-green-800"
-						transition:fade|local={{ duration: 200 }}
+						transition:fade={{ duration: 200 }}
 					>
 						Next &gt;
 					</button>
 				{/if}
 			</div>
 			{#if !isCollapsed}
-				<div transition:slide|local={{ duration: 300, easing: quintOut }}>
+				<div transition:slide={{ duration: 300, easing: quintOut }}>
 					<table class="w-full">
 						<thead>
 							<tr>

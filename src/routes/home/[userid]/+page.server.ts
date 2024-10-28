@@ -174,5 +174,25 @@ export const actions: Actions = {
 			console.error('Error deleting task:', err);
 			return { success: false, error: 'Failed to delete task' };
 		}
+	},
+
+	toggleTimer: async ({ request, locals }) => {
+		const { id, started, timer_started_at } = Object.fromEntries(await request.formData());
+		const hasStarted = started === 'true';
+		const taskId = id.toString();
+		const timmerStartedAt = Number(timer_started_at);
+
+		if (!hasStarted) {
+			locals.pb.collection('tasks').update(taskId, {
+				timer_started: true,
+				timer_started_at: Date.now()
+			});
+		} else {
+			const timePassed = Date.now() - timmerStartedAt;
+			locals.pb.collection('tasks').update(taskId, {
+				timer_started: false,
+				timer_total: timePassed
+			});
+		}
 	}
 };

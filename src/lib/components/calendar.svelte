@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
-	import { createEventDispatcher } from 'svelte';
+	import { createEventDispatcher, onMount } from 'svelte';
 	import { page } from '$app/stores';
 
 	export let mobile: boolean;
@@ -74,6 +74,16 @@
 		url.searchParams.set(key, value);
 		goto(url.toString());
 	}
+
+	onMount(() => {
+		//try to get the date from the url
+		const urlparams = new URLSearchParams($page.url.search);
+		if (urlparams.has('date')) {
+			const dateParam = urlparams.get('date');
+			selectedDate = dateParam || new Date().toISOString().split('T')[0];
+			console.log(selectedDate);
+		}
+	});
 </script>
 
 {#if mobile}

@@ -5,38 +5,85 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 	const filter = url.searchParams.get('filter') || 'tree';
 	const dateParam = url.searchParams.get('date');
 
-	// Konvertiere dateParam zu einem Date-Objekt oder nimm das aktuelle Datum, falls keins angegeben ist
-	const selectedDate = dateParam ? new Date(dateParam) : new Date();
-	const today = new Date(); // Das heutige Datum
+	// Stelle sicher, dass das heutige Datum auf den aktuellen Zeitpunkt gesetzt wird
+	const today = new Date();
+	const selectedDate = dateParam ? new Date(dateParam) : today;
+
+	// Normiere das Datum auf YYYY-MM-DD
+	const todayString = today.toISOString().split('T')[0];
+	const selectedDateString = selectedDate.toISOString().split('T')[0];
+
+	console.log('Heute:', today.toISOString());
+	console.log('Ausgewähltes Datum:', selectedDate.toISOString());
+
 	let filterQuery = '';
+	let tasksToUpdate = [];
 
 	try {
-		if (filter === 'tree') {
-			// Zeige alle Todos, die bis einschließlich dem angegebenen Datum erstellt wurden (vor oder am heutigen Tag)
-			filterQuery = `date <= "${selectedDate.toISOString()}"`;
-		} else if (filter === 'all') {
-			// Zeige alle Aufgaben außer die erledigten, die nicht am heutigen Tag sind
-			filterQuery = `checked = false && date != "${today.toISOString()}"`;
+		if (filter === 'all') {
+			// Alle Aufgaben anzeigen
+			filterQuery = '';
+		} else if (filter === 'tree') {
+			// Nur Aufgaben für das ausgewählte Datum, die nicht erledigt sind
+			if (selectedDateString !== todayString) {
+				filterQuery = `((checked = false) && (date ~ "${selectedDateString}"))`;
+			} else {
+				// Zeige alte und aktuelle Aufgaben für heute
+				filterQuery = `((date < "${today.toISOString()}" && checked = false) || date = "${today.toISOString()}")`;
+			}
 		} else if (filter === 'week') {
-			// Zeige alle Aufgaben von heute bis in 7 Tagen
-			const weekLater = new Date();
-			weekLater.setDate(today.getDate() + 7);
-			filterQuery = `date >= "${today.toISOString()}" && created <= "${weekLater.toISOString()}"`;
+			// Aufgaben für diese Woche (bis Sonntag)
+			const endOfWeek = new Date(today);
+			endOfWeek.setDate(today.getDate() + (7 - today.getDay())); // Nächster Sonntag
+			filterQuery = `((date >= "${today.toISOString()}" && date <= "${endOfWeek.toISOString()}" && checked = false))`;
 		} else if (filter === 'month') {
-			// Zeige alle Aufgaben von heute bis in 30 Tagen
-			const monthLater = new Date();
-			monthLater.setDate(today.getDate() + 30);
-			filterQuery = `date >= "${today.toISOString()}" && date <= "${monthLater.toISOString()}"`;
+			// Aufgaben für diesen Monat (bis Ende des Monats)
+			const endOfMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0); // Letzter Tag des Monats
+			filterQuery = `((date >= "${today.toISOString()}" && date <= "${endOfMonth.toISOString()}" && checked = false))`;
 		}
 
+		// Hole die Aufgaben, die dem Filter entsprechen
 		const tasks = await locals.pb.collection('tasks').getFullList({
-			filter: filterQuery
+			filter: filterQuery,
+			sort: 'date'
 		});
 
-		return { tasks };
+		console.log('Gefundene Aufgaben:', tasks.length);
+		tasks.forEach((task) => {
+			console.log('Aufgabe:', task.id, 'Datum:', task.date, 'Erledigt:', task.checked);
+		});
+
+		// Markiere überfällige Aufgaben
+		tasks.forEach((task) => {
+			const taskDate = new Date(task.date);
+			task.isOverdue = taskDate < today && !task.checked; // Überprüfen, ob die Aufgabe überfällig ist
+			console.log('Aufgabe:', task.id, 'ist überfällig:', task.isOverdue);
+		});
+
+		// Aktualisiere die Aufgaben: älter als heute, nicht gepinnt, nicht erledigt
+		tasksToUpdate = tasks.filter((task) => {
+			const taskDate = new Date(task.date);
+			return taskDate < today && !task.pinned && !task.checked;
+		});
+
+		console.log('Zu aktualisierende Aufgaben:', tasksToUpdate.length);
+		for (const task of tasksToUpdate) {
+			console.log('Aktualisiere Aufgabe:', task.id, 'auf heutiges Datum');
+			await locals.pb.collection('tasks').update(task.id, {
+				date: today.toISOString() // Update auf das aktuelle Datum und die Uhrzeit
+			});
+			task.date = today.toISOString(); // Aktualisiere das Datum im Task-Objekt
+		}
+
+		// Gib die Aufgaben, den Filter und das ausgewählte Datum zurück
+		return {
+			tasks,
+			filter,
+			selectedDate: selectedDate.toISOString() // Gib das vollständige Datum zurück
+		};
 	} catch (err) {
-		console.error('Error fetching tasks:', err);
-		throw error(500, 'Error fetching tasks');
+		console.error('Fehler beim Abrufen oder Aktualisieren der Aufgaben:', err);
+		throw error(500, 'Fehler beim Abrufen oder Aktualisieren der Aufgaben');
 	}
 };
 
@@ -45,15 +92,21 @@ export const actions: Actions = {
 		const formData = await request.formData();
 		const text = formData.get('text') as string;
 		const dateParam = formData.get('date') as string;
-		console.log('Date from form:', dateParam);
-
-		// Konvertiere dateParam zu einem Date-Objekt oder nimm das aktuelle Datum, falls keins angegeben ist
-		const selectedDate = dateParam ? new Date(dateParam) : new Date();
-		console.log('Selected Date:', selectedDate);
 
 		if (!text) {
 			return { success: false, error: 'Task text is required' };
 		}
+
+		// Verwende die lokale Zeit
+		let selectedDate: Date;
+		if (dateParam) {
+			selectedDate = new Date(dateParam); // Verwende das angegebene Datum
+		} else {
+			selectedDate = new Date(); // Verwende das aktuelle Datum
+		}
+
+		// Keine Uhrzeit auf Mitternacht setzen, speichere die Zeit wie sie ist
+		console.log('Aufgabe wird hinzugefügt mit folgendem Datum:', selectedDate.toISOString());
 
 		try {
 			await locals.pb.collection('tasks').create({
@@ -61,12 +114,12 @@ export const actions: Actions = {
 				checked: false,
 				pinned: false,
 				time: 0,
-				date: selectedDate.toISOString().split('T')[0],
+				date: selectedDate.toISOString(), // Speichere das Datum inklusive Zeit
 				users: [locals.user.id]
 			});
 			return { success: true };
 		} catch (err) {
-			console.error('Error adding task:', err);
+			console.error('Fehler beim Hinzufügen der Aufgabe:', err);
 			return { success: false, error: 'Failed to add task' };
 		}
 	},
